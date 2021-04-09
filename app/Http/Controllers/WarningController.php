@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 use App\Models\Warning;
 use App\Models\Unit;
@@ -58,6 +60,28 @@ class WarningController extends Controller
 
         } else {
             $array['error'] = 'A propriedade é necessária';
+        }
+
+        return $array;
+    }
+
+    public function addWarningFile(Request $request)
+    {
+        $array = ['error' => ''];
+
+        $validator = Validator::make($request->all(), [
+            'photo' => 'required|file|mimes:jpg,png'
+        ]);
+
+        if (! $validator->fails()) {
+
+            $file = $request->file('photo')->store('public');
+
+            $array['photo'] = asset(Storage::url($file));
+
+        } else {
+            $array['error'] = $validator->errors()->first();
+            return $array;
         }
 
         return $array;
