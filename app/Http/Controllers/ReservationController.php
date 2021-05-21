@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Unit;
 
 use App\Models\Area;
+use App\Models\AreaDisabledDay;
+use App\Models\Reservation;
 use phpDocumentor\Reflection\DocBlock\Tags\InvalidTag;
 
 class ReservationController extends Controller
@@ -95,7 +97,7 @@ class ReservationController extends Controller
             $unit = Unit::find($property);
             $area = Area::find($id);
 
-            if ($unit & $area) {
+            if ($unit && $area) {
                 $can = true;
 
                 $weekDay = date('w', strtotime($date));
@@ -107,7 +109,7 @@ class ReservationController extends Controller
                     $can = false;
                 } else {
                     $start = strtotime($area['start_time']);
-                    $end = strtotime('-1 hour', $area['end_time']);
+                    $end = strtotime('-1 hour', strtotime($area['end_time']));
                     $revtime = strtotime($time);
 
                     if ($revtime < $start || $revtime > $end) {
@@ -116,11 +118,30 @@ class ReservationController extends Controller
                 }
 
                 // verificar se está dentro dos disabled days
+                $existingDisabledDays = AreaDisabledDay::where('id_area', $id)
+                ->where('day', $date)
+                ->count();
 
+                if ($existingDisabledDays > 0) {
+                    $can = false;
+                }
 
                 // verificar se não existe outra reserva no mesmo dia / hora
+                $existingReservations = Reservation::where('id_area', $id)
+                ->where('reservation_date', $date . ' ' . $time)
+                ->count();
+
+                if ($existingReservations > 0) {
+                    $can = false;
+                }
 
                 if ($can) {
+
+                    $newReservation = new Reservation();
+                    $newReservation->id_unit = $property;
+                    $newReservation->id_area = $id;
+                    $newReservation->reservation_date = $date . ' ' . $time;
+                    $newReservation->save();
 
                 } else {
                     $array['error'] = 'Reserva não permitida neste dia / horário';
