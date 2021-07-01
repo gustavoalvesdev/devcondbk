@@ -7,9 +7,8 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Unit;
 
 use App\Models\Area;
-use App\Models\AreaDisabledDay;
 use App\Models\Reservation;
-use phpDocumentor\Reflection\DocBlock\Tags\InvalidTag;
+use App\Models\AreaDisabledDay;
 
 class ReservationController extends Controller
 {
@@ -159,4 +158,50 @@ class ReservationController extends Controller
 
         return $array;
     }
+
+    public function getDisabledDates($id)
+    {
+        $array = ['error' => '', 'list' => []];
+
+        $area = Area::find($id);
+
+        if ($area) {
+
+            // default disabled days
+            $disabledDays = AreaDisabledDay::where('id_area', $id)->get();
+            foreach ($disabledDays as $disabledDay) {
+                $array['list'][] = $disabledDay['day'];
+            }
+
+            // get disabled days through allowed days
+            $allowedDays = explode(',', $area['days']);
+            $offDays = [];
+
+            for ($i = 0; $i <= 6; $i++) {
+                if (! in_array($i, $allowedDays)) {
+                    $offDays[] = $i;
+                }
+            }
+
+            // list disabled days to 3 months ahead
+            $start = time();
+            $end = strtotime('+3 months');
+
+            for ($current = $start; $current < $end; $current = strtotime('+1 day', $current)) {
+                $wd = date('w', $current);
+
+                if (in_array($wd, $offDays)) {
+                    $array['list'][] = date('Y-m-d', $current);
+                }
+            }
+
+        } else {
+            $array['error'] = 'Área inexistente';
+            return $array;
+        }
+
+
+        return $array;
+    }
+
 }
