@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Unit;
 
 use App\Models\Area;
-use App\Models\Reservation;
 use App\Models\AreaDisabledDay;
+use App\Models\Reservation;
+use App\Models\Unit;
 
 class ReservationController extends Controller
 {
@@ -200,6 +200,100 @@ class ReservationController extends Controller
             return $array;
         }
 
+
+        return $array;
+    }
+
+    public function getTimes($id, Request $request) {
+        $array = ['error' => '', 'list' => []];
+
+        $validator = Validator::make($request->all(), [
+            'date' => 'required|date_format:Y-m-d'
+        ]);
+
+        if (!$validator->fails()) {
+
+            $date = $request->input('date');
+            $area = Area::find($id);
+
+            if ($area) {
+
+                $can = true;
+
+                // verify if it's a disabled day
+                $existingDisabledDay = AreaDisabledDay::where('id_area', $id)
+                ->where('day', $date)
+                ->count();
+
+                if ($existingDisabledDay > 0) {
+                    $can = false;
+                }
+
+                // verify if it's an allowed day
+                $allowedDays = explode(',', $area['days']);
+                $weekDay = date('w', strtotime($date));
+
+                if (! in_array($weekDay, $allowedDays)) {
+                    $can = false;
+                }
+
+                if ($can) {
+
+                    $start = strtotime($area['start_time']);
+                    $end = strtotime($area['end_time']);
+                    $times = [];
+
+                    for (
+                        $lastTime = $start;
+                        $lastTime < $end;
+                        $lastTime = strtotime('+1 hour', $lastTime)
+                    ) {
+                        $times[] = $lastTime;
+                    }
+
+                    $imeList = [];
+
+                    foreach($times as $time) {
+                        $timeList[] = [
+                            'id' => date('H:i:s', $time),
+                            'title' => date('H:i', $time) . ' - ' . date('H:i', strtotime('+1 hour', $time))
+                        ];
+                    }
+
+                    // Removing reservations
+                    $reservations = Reservation::where('id_area', $id)
+                    ->whereBetween('reservation_date', [
+                        $date . ' 00:00:00',
+                        $date . ' 23:59:59'
+                    ])
+                    ->get();
+
+                    $toRemove = [];
+
+                    foreach($reservations as $reservation) {
+                        $time = date('H:i:s', strtotime($reservation['reservation_date']));
+                        $toRemove[] = $time;
+                    }
+
+                    foreach($timeList as $timeItem) {
+                        if (!in_array($timeItem['id'], $toRemove)) {
+                            $array['list'][] = $timeItem;
+                        }
+                    }
+
+
+
+                }
+
+            } else {
+                $array['error'] = 'Área inexistente';
+                return $array;
+            }
+
+        } else {
+            $array['error'] = $validator->errors()->first();
+            return $array;
+        }
 
         return $array;
     }
