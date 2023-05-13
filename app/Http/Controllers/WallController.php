@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Wall;
@@ -45,6 +46,56 @@ class WallController extends Controller
         }
 
         $array['list'] = $walls;
+
+        return $array;
+    }
+
+    public function setWall(Request $request)
+    {
+        $array = ['error' => ''];
+
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string',
+            'body' => 'required|string'
+        ]);
+
+        if (!$validator->fails()) {
+            $title = $request->input('title');
+            $body = $request->input('body');
+            $datecreated = date('Y-m-d H:i:s');
+
+            $newWall = new Wall();
+            $newWall->title = $title;
+            $newWall->body = $body;
+            $newWall->datecreated = $datecreated;
+            $newWall->save();
+
+            $array['wall'] = $newWall;
+        } else {
+            $array['error'] = $validator->errors()->first();
+        }
+
+
+        return $array;
+    }
+
+    public function removeWall(int $id)
+    {
+
+        $array = ['error' => ''];
+
+        $id = addslashes($id);
+
+        $wall = Wall::where('id', $id);
+
+        $delete = $wall->delete();
+
+        if ($delete) {
+            $array['wall_removed'] = $id;
+        } else {
+            $array['error'] = 'Falha ao remover Aviso';
+        }
+
 
         return $array;
     }

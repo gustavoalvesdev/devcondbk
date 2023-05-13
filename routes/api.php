@@ -28,6 +28,8 @@ Route::middleware('auth:api')->group(function() {
 
     // Mural de Avisos
     Route::get('/walls', [WallController::class, 'getAll']);
+    Route::post('/walls', [WallController::class, 'setWall']);
+    Route::delete('/wall/{id}', [WallController::class, 'removeWall']);
     Route::post('/wall/{id}/like', [WallController::class, 'like']);
 
     // Documentos

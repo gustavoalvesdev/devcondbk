@@ -91,22 +91,22 @@ class AuthController extends Controller
         $array = ['error' => ''];
 
         $validator = Validator::make($request->all(), [
-            'cpf' => 'required|digits:11',
+            'email' => 'required|email',
             'password' => 'required'
         ]);
 
         if (! $validator->fails()) {
 
-            $cpf = $request->input('cpf');
+            $email = $request->input('email');
             $password = $request->input('password');
 
             $token = auth()->attempt([
-                'cpf' => $cpf,
+                'email' => $email,
                 'password' => $password
             ]);
 
             if (! $token) {
-                $array['error'] = 'CPF e/ou senha inválido(s).';
+                $array['error'] = 'E-mail e/ou senha inválido(s).';
                 return $array;
             }
 
