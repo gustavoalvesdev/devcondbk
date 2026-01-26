@@ -34,6 +34,9 @@ Route::middleware('auth:api')->group(function() {
 
     // Documentos
     Route::get('/docs', [DocController::class, 'getAll']);
+    Route::post('/docs', [DocController::class, 'store']);
+    Route::post('/doc/{id}', [DocController::class, 'update']);
+    Route::delete('/doc/{id}', [DocController::class, 'delete']);
 
     // Livro de Ocorrências
     Route::get('/warnings', [WarningController::class, 'getMyWarnings']);
