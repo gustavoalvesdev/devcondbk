@@ -25,11 +25,11 @@ class DocController extends Controller
         return $array;
     }
 
-    public function store(Request $request) 
+    public function store(Request $request)
     {
         $array = ['error' => ''];
 
-        if ($reuqest->hasFile('file') || $request->title) {
+        if (!$request->hasFile('file') || !$request->title) {
             $array['error'] = 'Campos obrigatórios não enviados';
             return $array;
         }
@@ -46,16 +46,20 @@ class DocController extends Controller
 
         $doc = new Doc();
         $doc->title = $request->title;
-        $odc->fileurl = $path;
+        $doc->fileurl = $path;
         $doc->save();
 
         return $array;
-    } 
+    }
 
     public function update(Request $request, $id)
     {
+        $array = ['error' => ''];
+
+        $doc = Doc::find($id);
+
         if (!$doc) {
-            $array['error'] = 'Documento não encontrado!';
+            $array['error'] = 'Documento não encontrado';
             return $array;
         }
 
@@ -63,9 +67,8 @@ class DocController extends Controller
             $doc->title = $request->title;
         }
 
-        if ($request>hasFile('file')) {
-            // remove o antigo
-            if ($doc->fileurl  && Storage::disk('public')->exists($doc->fileurl)) {
+        if ($request->hasFile('file')) {
+            if ($doc->fileurl && Storage::disk('public')->exists($doc->fileurl)) {
                 Storage::disk('public')->delete($doc->fileurl);
             }
 

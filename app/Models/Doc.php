@@ -11,4 +11,5 @@ class Doc extends Model
 
     public $timestamps = false;
     public $table = 'docs';
+    protected $fillable = ['title', 'fileurl'];
 }
