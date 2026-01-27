@@ -186,4 +186,21 @@ class UnitController extends Controller
 
         return $array;
     }
+
+    public function getMyUnits()
+    {
+        $array = ['error' => '', 'list' => []];
+        $user = auth()->user();
+
+        $units = Unit::where('id_owner', $user->id)->get();
+
+        foreach($units as $unit) {
+            $array['list'][] = [
+                'id' => $unit->id,
+                'name' => $unit->name,
+            ];
+        }
+
+        return $array;
+    }
 }
