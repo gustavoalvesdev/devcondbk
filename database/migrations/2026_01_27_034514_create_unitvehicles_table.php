@@ -15,7 +15,11 @@ class CreateUnitvehiclesTable extends Migration
     {
         Schema::create('unitvehicles', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->unsignedBigInteger('id_unit');
+            $table->foreign('id_unit')->references('id')->on('units')->onDelete('cascade');
+            $table->string('title');
+            $table->string('color');
+            $table->string('plate');
         });
     }
 
