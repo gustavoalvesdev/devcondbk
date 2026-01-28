@@ -15,7 +15,9 @@ class CreateUnitsTable extends Migration
     {
         Schema::create('units', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->string('name');
+            $table->unsignedBigInteger('id_owner');
+            $table->foreign('id_owner')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
