@@ -15,7 +15,10 @@ class CreateWalllikesTable extends Migration
     {
         Schema::create('walllikes', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->unsignedBigInteger('id_wall');
+            $table->unsignedBigInteger('id_user');
+            $table->foreign('id_wall')->references('id')->on('walls')->onDelete('cascade');
+            $table->foreign('id_user')->references('id')->on('user')->onDelete('cascade');
         });
     }
 
