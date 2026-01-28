@@ -15,7 +15,9 @@ class CreateWallsTable extends Migration
     {
         Schema::create('walls', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->string('title');
+            $table->string('body');
+            $table->dateTime('datecreated');
         });
     }
 
