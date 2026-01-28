@@ -15,7 +15,10 @@ class CreateUnitpeoplesTable extends Migration
     {
         Schema::create('unitpeoples', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->unsignedBigInteger('id_unit');
+            $table->foreign('id_unit')->references('id')->on('units')->onDelete('cascade');
+            $table->string('name');
+            $table->date('birthdate');
         });
     }
 
